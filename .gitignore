@@ -37,3 +37,6 @@ backend/*.db-wal
 # Test coverage
 coverage/
 *.lcov
+
+# Claude Code working directory
+.claude/
