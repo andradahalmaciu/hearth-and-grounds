@@ -3,12 +3,13 @@ import { z } from 'zod'
 import { getDb } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import { ContactMessage } from '../types'
+import { emailSchema } from '../utils/validation'
 
 const router = Router()
 
 const MessageSchema = z.object({
   name:    z.string().min(1, 'Name is required'),
-  email:   z.string().email('Valid email required'),
+  email:   emailSchema,
   message: z.string().min(5, 'Message must be at least 5 characters'),
 })
 

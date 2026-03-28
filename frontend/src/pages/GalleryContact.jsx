@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { sendContactMessage } from '../services/api'
+import { validateEmail } from '../utils/validation'
 
 // All 18 Pinterest board images
 const p = id => `https://i.pinimg.com/originals/${id.slice(0,2)}/${id.slice(2,4)}/${id.slice(4,6)}/${id}.jpg`
@@ -34,6 +35,8 @@ export default function GalleryContact() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    const emailCheck = validateEmail(form.email)
+    if (!emailCheck.isValid) { setError(emailCheck.errorMessage); return }
     setSubmitting(true)
     try {
       await sendContactMessage(form)

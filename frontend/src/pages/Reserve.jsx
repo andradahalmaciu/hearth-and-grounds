@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createReservation } from '../services/api'
+import { validateEmail } from '../utils/validation'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -27,6 +28,8 @@ export default function Reserve() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    const emailCheck = validateEmail(form.email)
+    if (!emailCheck.isValid) { setError(emailCheck.errorMessage); return }
     setSubmitting(true)
     try {
       const payload = {
