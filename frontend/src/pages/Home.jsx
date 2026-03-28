@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 // Pinterest board image URLs
 const p = id => `https://i.pinimg.com/originals/${id.slice(0,2)}/${id.slice(2,4)}/${id.slice(4,6)}/${id}.jpg`
@@ -71,8 +71,6 @@ const heroNav = [
 ]
 
 export default function Home() {
-  const navigate = useNavigate()
-
   return (
     <main>
 

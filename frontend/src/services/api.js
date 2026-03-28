@@ -42,6 +42,19 @@ export const getReservations = (date) =>
   request(`/reservations${date ? `?date=${date}` : ''}`)
 export const updateReservationStatus = (id, status) =>
   request(`/reservations/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })
+export const exportReservationsCsv = async (date) => {
+  const token = getToken()
+  const url = `${BASE}/reservations/export${date ? `?date=${date}` : ''}`
+  const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  if (!res.ok) throw new Error('Export failed')
+  const blob = await res.blob()
+  const href = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = href
+  a.download = date ? `reservations-${date}.csv` : 'reservations.csv'
+  a.click()
+  URL.revokeObjectURL(href)
+}
 
 // Contact (public)
 export const sendContactMessage = (data) =>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
@@ -22,7 +22,6 @@ function ScrollToTop() {
 }
 
 function Layout({ children }) {
-  const navigate = useNavigate()
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
   if (isAdmin) return <>{children}</>

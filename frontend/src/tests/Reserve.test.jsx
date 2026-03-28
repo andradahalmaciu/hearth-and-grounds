@@ -15,8 +15,11 @@ async function fillRequiredFields(user, container) {
   await user.type(screen.getByPlaceholderText(/your name/i), 'Andrada')
   await user.type(screen.getByPlaceholderText(/email@example/i), 'a@example.com')
   fireEvent.change(container.querySelector('input[type="date"]'), {
-    target: { value: '2025-12-20' },
+    target: { value: '2026-12-20' },
   })
+  // time is required — select the first available slot
+  const timeSelect = container.querySelector('select[required]')
+  fireEvent.change(timeSelect, { target: { value: '14:00' } })
 }
 
 describe('Reserve page', () => {

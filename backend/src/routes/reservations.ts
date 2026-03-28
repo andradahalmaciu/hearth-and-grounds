@@ -3,12 +3,13 @@ import { z } from 'zod'
 import { getDb } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import { Reservation } from '../types'
+import { emailSchema } from '../utils/validation'
 
 const router = Router()
 
 const ReservationSchema = z.object({
   name:       z.string().min(1, 'Name is required'),
-  email:      z.string().email('Valid email required'),
+  email:      emailSchema,
   phone:      z.string().default(''),
   date:       z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   time:       z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM'),
@@ -44,6 +45,30 @@ router.get('/', requireAuth, (req: Request, res: Response): void => {
     ? db.prepare('SELECT * FROM reservations WHERE date = ? ORDER BY time').all(date) as Reservation[]
     : db.prepare('SELECT * FROM reservations ORDER BY date DESC, time').all() as Reservation[]
   res.json(reservations)
+})
+
+// Admin — export all reservations as CSV
+router.get('/export', requireAuth, (req: Request, res: Response): void => {
+  const db = getDb()
+  const { date } = req.query
+  const reservations = date
+    ? db.prepare('SELECT * FROM reservations WHERE date = ? ORDER BY date, time').all(date) as Reservation[]
+    : db.prepare('SELECT * FROM reservations ORDER BY date, time').all() as Reservation[]
+
+  const columns = ['id', 'name', 'email', 'phone', 'date', 'time', 'party_size', 'status', 'notes', 'created_at'] as const
+  const escapeCell = (val: unknown): string => {
+    if (val == null) return ''
+    const str = String(val)
+    return str.includes(',') || str.includes('"') || str.includes('\n')
+      ? `"${str.replace(/"/g, '""')}"`
+      : str
+  }
+  const rows = reservations.map(r => columns.map(col => escapeCell(r[col])).join(','))
+  const csv = [columns.join(','), ...rows].join('\n')
+
+  res.setHeader('Content-Type', 'text/csv')
+  res.setHeader('Content-Disposition', 'attachment; filename="reservations.csv"')
+  res.send(csv)
 })
 
 // Admin — update status

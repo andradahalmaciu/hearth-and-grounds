@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AdminSidebar } from './AdminDashboard'
-import { getReservations, updateReservationStatus } from '../../services/api'
+import { getReservations, updateReservationStatus, exportReservationsCsv } from '../../services/api'
 
 const todayStr = () => new Date().toISOString().split('T')[0]
 
@@ -64,6 +64,14 @@ export default function AdminReservations() {
     setShowAll(false)
   }
 
+  const handleExport = async () => {
+    try {
+      await exportReservationsCsv(showAll ? undefined : date)
+    } catch {
+      alert('Export failed. Please try again.')
+    }
+  }
+
   return (
     <div className="flex min-h-screen bg-parchment">
       <AdminSidebar />
@@ -99,6 +107,12 @@ export default function AdminReservations() {
               }`}
             >
               Show All
+            </button>
+            <button
+              onClick={handleExport}
+              className="self-end mb-0.5 font-sans text-xs tracking-widest uppercase py-2 px-4 border border-walnut/20 text-walnut/50 hover:border-walnut/40 hover:text-walnut transition-colors"
+            >
+              Export CSV
             </button>
           </div>
 

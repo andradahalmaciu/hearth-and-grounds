@@ -76,6 +76,43 @@ describe('GET /api/reservations (admin)', () => {
   })
 })
 
+describe('GET /api/reservations/export (admin)', () => {
+  it('returns 401 without token', async () => {
+    const res = await request(app).get('/api/reservations/export')
+    expect(res.status).toBe(401)
+  })
+
+  it('returns CSV with correct headers', async () => {
+    const res = await request(app)
+      .get('/api/reservations/export')
+      .set('Authorization', `Bearer ${token}`)
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toMatch(/text\/csv/)
+    expect(res.headers['content-disposition']).toContain('reservations.csv')
+    const firstLine = res.text.split('\n')[0]
+    expect(firstLine).toBe('id,name,email,phone,date,time,party_size,status,notes,created_at')
+  })
+
+  it('includes reservation data rows', async () => {
+    await request(app).post('/api/reservations').send(validReservation)
+    const res = await request(app)
+      .get('/api/reservations/export')
+      .set('Authorization', `Bearer ${token}`)
+    const lines = res.text.split('\n')
+    expect(lines.length).toBeGreaterThan(1)
+    expect(lines.some(line => line.includes('Andrada H'))).toBe(true)
+  })
+
+  it('filters by date when ?date= is provided', async () => {
+    const res = await request(app)
+      .get('/api/reservations/export?date=2025-12-20')
+      .set('Authorization', `Bearer ${token}`)
+    expect(res.status).toBe(200)
+    const dataLines = res.text.split('\n').slice(1).filter(Boolean)
+    expect(dataLines.every(line => line.includes('2025-12-20'))).toBe(true)
+  })
+})
+
 describe('PATCH /api/reservations/:id (admin)', () => {
   it('updates reservation status to confirmed', async () => {
     const createRes = await request(app).post('/api/reservations').send(validReservation)
