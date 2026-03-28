@@ -140,8 +140,14 @@ hearth-and-grounds/
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js v20.19.0 or higher (v22+ also supported) — Vite 7 requires this minimum
 - npm 9+
+
+> **Seeing `EBADENGINE` warnings?** Your Node version is too old. Update it:
+> ```bash
+> nvm install 20 && nvm use 20
+> ```
+> Don't have `nvm`? Install it from https://github.com/nvm-sh/nvm, restart your terminal, then run the above.
 
 ---
 
