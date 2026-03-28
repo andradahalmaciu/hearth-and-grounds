@@ -17,9 +17,8 @@ async function fillRequiredFields(user, container) {
   fireEvent.change(container.querySelector('input[type="date"]'), {
     target: { value: '2026-12-20' },
   })
-  // time is required — select the first available slot
-  const timeSelect = container.querySelector('select[required]')
-  fireEvent.change(timeSelect, { target: { value: '14:00' } })
+  // select time by label association — robust against field reordering
+  fireEvent.change(screen.getByRole('combobox', { name: /time/i }), { target: { value: '14:00' } })
 }
 
 describe('Reserve page', () => {

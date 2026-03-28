@@ -55,13 +55,15 @@ router.get('/export', requireAuth, (req: Request, res: Response): void => {
     ? db.prepare('SELECT * FROM reservations WHERE date = ? ORDER BY date, time').all(date) as Reservation[]
     : db.prepare('SELECT * FROM reservations ORDER BY date, time').all() as Reservation[]
 
-  const columns = ['id', 'name', 'email', 'phone', 'date', 'time', 'party_size', 'status', 'notes', 'created_at'] as const
+  const columns: (keyof Reservation)[] = ['id', 'name', 'email', 'phone', 'date', 'time', 'party_size', 'status', 'notes', 'created_at']
   const escapeCell = (val: unknown): string => {
     if (val == null) return ''
     const str = String(val)
-    return str.includes(',') || str.includes('"') || str.includes('\n')
-      ? `"${str.replace(/"/g, '""')}"`
-      : str
+    // Prefix formula-injection characters to prevent spreadsheet execution
+    const safe = /^[=+\-@]/.test(str) ? `'${str}` : str
+    return safe.includes(',') || safe.includes('"') || safe.includes('\n')
+      ? `"${safe.replace(/"/g, '""')}"`
+      : safe
   }
   const rows = reservations.map(r => columns.map(col => escapeCell(r[col])).join(','))
   const csv = [columns.join(','), ...rows].join('\n')

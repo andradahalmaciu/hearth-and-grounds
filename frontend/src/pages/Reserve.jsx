@@ -162,10 +162,11 @@ export default function Reserve() {
                     />
                   </div>
                   <div>
-                    <label className="font-sans text-xs tracking-widest uppercase text-walnut/35 block mb-2">
+                    <label htmlFor="time" className="font-sans text-xs tracking-widest uppercase text-walnut/35 block mb-2">
                       Time <span className="text-clay">*</span>
                     </label>
                     <select
+                      id="time"
                       required
                       value={form.time}
                       onChange={set('time')}

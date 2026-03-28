@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AdminSidebar } from './AdminDashboard'
-import { getReservations, updateReservationStatus, exportReservationsCsv } from '../../services/api'
+import { getReservations, updateReservationStatus, fetchReservationsCsvBlob } from '../../services/api'
+import { downloadBlob } from '../../utils/download'
 
 const todayStr = () => new Date().toISOString().split('T')[0]
 
@@ -49,7 +50,7 @@ export default function AdminReservations() {
       await updateReservationStatus(id, status)
       await load(showAll ? undefined : date)
     } catch (err) {
-      alert(err?.message || 'Failed to update status.')
+      setError(err?.message || 'Failed to update status.')
     } finally {
       setActionLoading(null)
     }
@@ -65,10 +66,13 @@ export default function AdminReservations() {
   }
 
   const handleExport = async () => {
+    setError('')
     try {
-      await exportReservationsCsv(showAll ? undefined : date)
-    } catch {
-      alert('Export failed. Please try again.')
+      const blob = await fetchReservationsCsvBlob(showAll ? undefined : date)
+      const filename = showAll ? 'reservations.csv' : `reservations-${date}.csv`
+      downloadBlob(blob, filename)
+    } catch (err) {
+      setError(err?.message || 'Export failed. Please try again.')
     }
   }
 
