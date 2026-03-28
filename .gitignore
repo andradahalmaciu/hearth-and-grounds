@@ -38,5 +38,6 @@ backend/*.db-wal
 coverage/
 *.lcov
 
-# Claude Code working directory
-.claude/
+# Claude Code — ignore transient files, commit skills/agents/hooks/settings
+.claude/.DS_Store
+.claude/plans/
