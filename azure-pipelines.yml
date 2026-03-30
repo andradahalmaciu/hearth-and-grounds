@@ -1,0 +1,83 @@
+# Azure DevOps Pipeline — Hearth and Grounds
+# Triggers on PRs and pushes to main.
+# Stages: lint → test → build
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  NODE_VERSION: '20.x'
+
+stages:
+  # ── Stage 1: Lint ─────────────────────────────────────────────────────────
+  - stage: Lint
+    displayName: 'Lint'
+    jobs:
+      - job: Lint
+        displayName: 'ESLint + TypeScript check'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: npm install && npm install --prefix frontend && npm install --prefix backend
+            displayName: 'Install dependencies'
+
+          - script: npm run lint
+            displayName: 'Run lint'
+
+  # ── Stage 2: Test ─────────────────────────────────────────────────────────
+  - stage: Test
+    displayName: 'Test'
+    dependsOn: Lint
+    jobs:
+      - job: UnitIntegration
+        displayName: 'Unit & Integration tests (Vitest)'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: npm install && npm install --prefix frontend && npm install --prefix backend
+            displayName: 'Install dependencies'
+
+          - script: npm test
+            displayName: 'Run all Vitest tests'
+
+  # ── Stage 3: Build ────────────────────────────────────────────────────────
+  - stage: Build
+    displayName: 'Build'
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: BuildFrontend
+        displayName: 'Vite production build'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: npm install --prefix frontend
+            displayName: 'Install frontend dependencies'
+
+          - script: npm run build --prefix frontend
+            displayName: 'Build frontend'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: frontend/dist
+              artifactName: frontend-dist
+            displayName: 'Publish frontend artifact'
